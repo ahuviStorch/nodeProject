@@ -1,9 +1,7 @@
-// src/controllers/courseController.js
 import * as courseService from '../services/courseService.js';
-
 import { ApiResponse } from '../utils/apiResponse.js';
 
-// בקר לקבלת כל הקורסים
+// לקבלת כל הקורסים
 export const getCoursesHandler = (req, res, next) => {
   try {
     const data = courseService.fetchAllCourses();
@@ -13,23 +11,7 @@ export const getCoursesHandler = (req, res, next) => {
   }
 };
 
-// בקר לקבלת קורס בודד לפי מזהה עם אימות טיפוס לנתיב
-export const getCourseByIdHandler = (req, res, next) => {
-  try {
-    const id = parseInt(req.params.id);
-    if (Number.isNaN(id)) {
-      const err = new Error('מזהה הנתב חייב להיות מספר שלם תקין');
-      err.status = 400;
-      throw err;
-    }
-    const data = courseService.fetchCourseById(id);
-    res.json(ApiResponse.success(data));
-  } catch (err) {
-    next(err);
-  }
-};
-
-// בקר ליצירת קורס חדש
+// ליצירת קורס חדש
 export const createCourseHandler = (req, res, next) => {
   try {
     const { name, description } = req.body;
@@ -40,24 +22,7 @@ export const createCourseHandler = (req, res, next) => {
   }
 };
 
-// בקר לעדכון קורס קיים
-export const updateCourseHandler = (req, res, next) => {
-  try {
-    const id = parseInt(req.params.id);
-    if (Number.isNaN(id)) {
-      const err = new Error('מזהה הנתב חייב להיות מספר שלם תקין');
-      err.status = 400;
-      throw err;
-    }
-    const { name, description } = req.body;
-    const data = courseService.editCourse(id, name, description);
-    res.json(ApiResponse.success(data, 'הקורס עודכן בהצלחה'));
-  } catch (err) {
-    next(err);
-  }
-};
-
-// בקר למחיקת קורס קיים
+// למחיקת קורס קיים
 export const deleteCourseHandler = (req, res, next) => {
   try {
     const id = parseInt(req.params.id);
@@ -68,6 +33,44 @@ export const deleteCourseHandler = (req, res, next) => {
     }
     const result = courseService.removeCourse(id);
     res.json(ApiResponse.success(null, result.message));
+  } catch (err) {
+    next(err);
+  }
+};
+
+// הרשמת סטודנט לקורס (הפונקציה שהייתה חסרה)
+export const enrollStudentHandler = (req, res, next) => {
+  try {
+    const courseId = parseInt(req.params.id);
+    const { studentId } = req.body;
+
+    if (Number.isNaN(courseId) || !studentId) {
+      const err = new Error('מזהה קורס או סטודנט לא תקינים');
+      err.status = 400;
+      throw err;
+    }
+
+    const data = courseService.enrollStudentToCourse(courseId, studentId);
+    res.json(ApiResponse.success(data, 'הסטודנט נרשם לקורס בהצלחה'));
+  } catch (err) {
+    next(err);
+  }
+};
+
+// ביטול הרשמת סטודנט מקורס (הפונקציה שהייתה חסרה)
+export const unenrollStudentHandler = (req, res, next) => {
+  try {
+    const courseId = parseInt(req.params.id);
+    const { studentId } = req.body;
+
+    if (Number.isNaN(courseId) || !studentId) {
+      const err = new Error('מזהה קורס או סטודנט לא תקינים');
+      err.status = 400;
+      throw err;
+    }
+
+    const data = courseService.removeStudentFromCourse(courseId, studentId);
+    res.json(ApiResponse.success(data, 'הסטודנט הוסר מהקורס בהצלחה'));
   } catch (err) {
     next(err);
   }
