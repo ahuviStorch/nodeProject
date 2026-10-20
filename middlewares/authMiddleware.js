@@ -1,7 +1,17 @@
 // בדיקת כותרת אבטחה כללית
 export const checkAuthKey = (req, res, next) => {
   const authKey = req.get('auth-key');
-  const secretValue = 'my-student-app-secret';
+  // [שינוי בשלב ה-env] המפתח הסודי נקרא ממשתני הסביבה במקום להיות כתוב בקוד
+  const secretValue = process.env.AUTH_SECRET;
+
+  // [שינוי בשלב ה-env] עצירה בשגיאת שרת אם המפתח לא הוגדר כלל —
+  // עדיף להיכשל בקול רם מאשר להשוות מול undefined בשקט
+  if (!secretValue) {
+    return res.status(500).json({
+      success: false,
+      message: 'Server misconfiguration: AUTH_SECRET is not set.'
+    });
+  }
 
   if (!authKey || authKey !== secretValue) {
     return res.status(401).json({
